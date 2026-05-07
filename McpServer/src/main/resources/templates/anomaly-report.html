@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>能耗异常深度分析报告</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .meta {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 20px;
+        }
+        .section h2 {
+            color: #2980b9;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .priority-high { color: #e74c3c; font-weight: bold; }
+        .priority-medium { color: #f39c12; font-weight: bold; }
+        .priority-low { color: #2ecc71; font-weight: bold; }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #95a5a6;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>🔍 能耗异常深度分析报告</h1>
+<div class="meta">
+    <p>生成时间：<span th:text="${#temporals.format(generatedAt, 'yyyy-MM-dd HH:mm:ss')}"></span></p>
+    <p>设备 ID：<span th:text="${report.BasicInfo.deviceId}"></span> &nbsp;|&nbsp;
+        分析时段：<span th:text="${report.BasicInfo.startTime}"></span> 至 <span th:text="${report.BasicInfo.endTime}"></span></p>
+</div>
+
+<!-- 基础统计 -->
+<div class="section">
+    <h2>📊 基础统计</h2>
+    <table>
+        <tr><th>指标</th><th>值</th></tr>
+        <tr><td>总数据记录数</td><td th:text="${report.BasicInfo.totalRecords}"></td></tr>
+        <tr><td>异常数量</td><td th:text="${report.BasicInfo.anomalyCount}"></td></tr>
+        <tr><td>异常率</td><td th:text="${#numbers.formatDecimal(report.BasicInfo.anomalyCount * 100.0 / report.BasicInfo.totalRecords, 1, 1) + '%'}"></td></tr>
+    </table>
+</div>
+
+<!-- 根因分析 -->
+<div class="section">
+    <h2>🔎 根因分析</h2>
+    <!-- ✅ 修复：用 #lists.isEmpty() 替代 .empty -->
+    <div th:if="${report.rootCauses == null or #lists.isEmpty(report.rootCauses)}">
+        <p>未发现明显根因关联。</p>
+    </div>
+    <div th:each="cause : ${report.rootCauses}" th:unless="${report.rootCauses == null or #lists.isEmpty(report.rootCauses)}">
+        <div style="margin-bottom: 20px;">
+            <strong style="font-size: 1.1em;">[<span th:text="${cause.causeType}"></span>] <span th:text="${cause.causeName}"></span></strong>
+            <span style="margin-left: 15px; background-color: #f0f0f0; padding: 2px 8px; border-radius: 12px;">置信度 <span th:text="${#numbers.formatDecimal(cause.confidence * 100, 0, 0)}"></span>%</span>
+            <p th:text="${cause.description}"></p>
+            <p><strong>建议：</strong> <span th:text="${cause.suggestion}"></span></p>
+        </div>
+    </div>
+</div>
+
+<!-- 处理步骤 -->
+<div class="section">
+    <h2>📋 处理步骤</h2>
+    <!-- ✅ 修复：用 #lists.isEmpty() 替代 .empty -->
+    <div th:if="${report.actionPlan == null or #lists.isEmpty(report.actionPlan)}">
+        <p>暂无具体处理步骤。</p>
+    </div>
+    <div th:each="step : ${report.actionPlan}" th:unless="${report.actionPlan == null or #lists.isEmpty(report.actionPlan)}">
+        <div style="margin-bottom: 15px;">
+            <strong>步骤 <span th:text="${step.stepNumber}"></span>：<span th:text="${step.title}"></span></strong>
+            <span class="priority-high" th:if="${step.priority == 'HIGH'}">高优先级</span>
+            <span class="priority-medium" th:if="${step.priority == 'MEDIUM'}">中优先级</span>
+            <span class="priority-low" th:if="${step.priority == 'LOW'}">低优先级</span>
+            <span style="margin-left: 10px;">预估时间：<span th:text="${step.estimatedTime}"></span></span>
+            <p th:text="${step.description}"></p>
+        </div>
+    </div>
+</div>
+
+<!-- 智能分析过程信息（如果有） -->
+<div class="section" th:if="${report.BasicInfo.analysisStrategy != null}">
+    <h2>🤖 智能分析过程</h2>
+    <p>选择策略：<span th:text="${report.BasicInfo.analysisStrategy}"></span></p>
+    <p th:if="${report.BasicInfo.expectedAnomalyCount != null}">预估异常数：<span th:text="${report.BasicInfo.expectedAnomalyCount}"></span></p>
+    <p>实际异常数：<span th:text="${report.BasicInfo.anomalyCount}"></span></p>
+</div>
+
+<div class="footer">
+    本报告由能耗智能分析系统自动生成，仅供参考。<br>
+    如需进一步诊断，请联系技术人员。
+</div>
+</body>
+</html>

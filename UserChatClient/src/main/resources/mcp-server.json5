@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "AISearch": {
+      "url": "http://appbuilder.baidu.com/v2/ai_search/mcp/sse?api_key=Bearer+bce-v3/ALTAK-EiA7Nm9AZ82ZRrQX848Ea/8ad2d91e4b408ef56ded752c5e03970b284e0feb"
+    }
+  }
+}

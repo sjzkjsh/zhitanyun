@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.Mapper.EnergyReadingsMapper">
+
+
+
+<!--    <select id="selectAbnormalBuildingDeviceByPage" resultType="com.example.Entity.AbnormalDeviceVO">-->
+<!--    <![CDATA[-->
+<!--        SELECT-->
+<!--            ru.building_id,-->
+<!--            ru.device_id,-->
+<!--            ru.metric_name,-->
+<!--            CASE ru.metric_name-->
+<!--                WHEN 'power_consumption' THEN '电力能耗'-->
+<!--                WHEN 'water_consumption' THEN '水耗'-->
+<!--                WHEN 'ac_power_consumption' THEN '空调能耗'-->
+<!--                WHEN 'ac_outlet_temp' THEN '空调出水温度'-->
+<!--                WHEN 'ac_inlet_temp' THEN '空调回水温度'-->
+<!--                WHEN 'env_temp' THEN '环境温度'-->
+<!--                WHEN 'humidity' THEN '湿度'-->
+<!--                WHEN 'occupancy_density' THEN '人员密度'-->
+<!--                ELSE ru.metric_name-->
+<!--                END AS metric_cn_name,-->
+<!--            ru.metric_value AS abnormal_value,-->
+<!--            tr.min_value AS min_val,-->
+<!--            tr.max_value AS max_val,-->
+<!--            tr.unit,-->
+<!--            CASE-->
+<!--                WHEN ru.metric_value < tr.min_value THEN '超出下限'-->
+<!--                WHEN ru.metric_value > tr.max_value THEN '超出上限'-->
+<!--                END AS description,-->
+<!--            ru.monitoring_time-->
+<!--        FROM (-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'power_consumption' AS metric_name, power_consumption AS metric_value-->
+<!--                 FROM energy_readings WHERE power_consumption IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'water_consumption', water_consumption-->
+<!--                 FROM energy_readings WHERE water_consumption IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'ac_power_consumption', ac_power_consumption-->
+<!--                 FROM energy_readings WHERE ac_power_consumption IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'ac_outlet_temp', ac_outlet_temp-->
+<!--                 FROM energy_readings WHERE ac_outlet_temp IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'ac_inlet_temp', ac_inlet_temp-->
+<!--                 FROM energy_readings WHERE ac_inlet_temp IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'env_temp', env_temp-->
+<!--                 FROM energy_readings WHERE env_temp IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'humidity', humidity-->
+<!--                 FROM energy_readings WHERE humidity IS NOT NULL-->
+<!--                 UNION ALL-->
+<!--                 SELECT building_id, device_id, monitoring_time,-->
+<!--                        'occupancy_density', occupancy_density-->
+<!--                 FROM energy_readings WHERE occupancy_density IS NOT NULL-->
+<!--             ) ru-->
+<!--                 INNER JOIN threshold_range tr-->
+<!--                            ON tr.metric_name = ru.metric_name-->
+<!--                                AND (tr.building_id IS NULL OR tr.building_id = ru.building_id)-->
+<!--                                AND (tr.device_id IS NULL OR tr.device_id = ru.device_id)-->
+<!--                                AND (tr.effective_from IS NULL OR tr.effective_from <= ru.monitoring_time)-->
+<!--                                AND (tr.effective_to IS NULL OR ru.monitoring_time <= tr.effective_to)-->
+<!--        WHERE ru.metric_value NOT BETWEEN tr.min_value AND tr.max_value-->
+<!--        ORDER BY ru.building_id, ru.device_id, ru.monitoring_time-->
+<!--        ]]>-->
+<!--</select>-->
+
+</mapper>
