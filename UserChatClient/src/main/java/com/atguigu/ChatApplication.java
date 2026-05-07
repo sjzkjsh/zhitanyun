@@ -15,6 +15,6 @@ public class ChatApplication {
     public static void main(String[] args) {
         Hooks.enableAutomaticContextPropagation();
         SpringApplication.run(ChatApplication.class, args);
-        
+
     }
 }
