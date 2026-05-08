@@ -191,15 +191,18 @@
 
 应用代码无需感知读写分离，统一连接 ProxySQL 端口即可，由 ProxySQL 根据 SQL 语句自动路由。
 
-### 性能
+### 性能优化
 
-| 优化项 | 优化前 | 优化后 | 提升 |
-|--------|--------|--------|------|
-| 异常检测 N+1 查询 | 200 次 DB 查询 | 1 次批量查询 + TreeMap | **200x** |
-| 告警去重 N+1 查询 | 50 次 DB 查询 | 1 次查询 + Set 过滤 | **50x** |
-| 反射字段访问 | 每次反射 | ConcurrentHashMap 缓存 | **10x** |
-| 告警批量插入 | 逐条 insert | saveBatch | **50x** |
-| 读写分离 | 所有请求走主库 | ProxySQL 自动路由读到从库 | **~2x** |
+| 功能 | 使用技术 | 效果 |
+|------|---------|------|
+| 异常检测批量查询 | TreeMap.floorEntry() 内存查找替代逐条 DB 查询 | 单次批量查询替代 200 次逐条查询 |
+| 告警去重过滤 | HashSet 内存过滤替代逐条 DB 比对 | 单次查询替代 50 次逐条查询 |
+| 反射字段缓存 | ConcurrentHashMap.computeIfAbsent() | 避免重复 getDeclaredField()，提升扫描性能 |
+| 告警批量写入 | MyBatis-Plus saveBatch() | 单条 SQL 批量插入替代逐条 insert |
+| MySQL 读写分离 | ProxySQL 中间代理 | SELECT 自动路由到从库，减轻主库压力 |
+| 多级缓存 | Caffeine 本地缓存 + Redis 分布式缓存 | 本地命中 0ms，Redis 命中 < 5ms |
+| 能耗数据导入 | EasyExcel 流式解析 + 数据清洗 + 去重 | 单次可处理万级数据，支持 upsert 更新 |
+| 连接池调优 | HikariCP max=20 + Lettuce max-active=32 | 高并发场景下连接不阻塞 |
 
 ---
 
