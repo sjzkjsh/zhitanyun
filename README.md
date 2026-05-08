@@ -12,6 +12,7 @@
 
 - **27+ 个 MCP Tool**：覆盖能耗查询、COP 计算、异常诊断、工单管理、事务操作等 9 大业务领域
 - **AI 事务操作**：大模型不仅能查询数据，还能创建工单、更新设备状态、调整阈值、关闭告警
+- **MySQL 主从复制 + ProxySQL 读写分离**：Master/Slave 主从复制，ProxySQL 中间代理自动路由读写
 - **两级异常检测**：第一级快速筛查 + 第二级深度根因分析（4 个假设维度，带置信度评分）
 - **三级阈值体系**：设备级 > 建筑级 > 全局级，精细化告警配置
 - **COP 能效分析**：基于热力学公式实时计算，结合 RAG 知识库给出专业优化建议
@@ -25,7 +26,7 @@
 |------|------|
 | 后端框架 | Spring Boot 3.2.5、Spring AI 1.1.4、Spring WebFlux、MyBatis-Plus 3.5.11 |
 | AI 大模型 | 阿里通义千问 Qwen-Plus、MCP Server/Client、阿里百炼知识库、百度千帆搜索 |
-| 数据存储 | MySQL 8.x、Redis、Redisson 3.26（分布式锁+布隆过滤器）、Caffeine 本地缓存 |
+| 数据存储 | MySQL 8.x 主从复制（Master+Slave）、ProxySQL 读写分离代理、Redis、Redisson 3.26（分布式锁+布隆过滤器）、Caffeine 本地缓存 |
 | 微服务通信 | OpenFeign 4.1.5、SSE 流式推送、WebSocket |
 | 安全认证 | JWT、Easy Captcha 密码加密 |
 | 工具中间件 | EasyExcel 4.0.3、Apache PDFBox、Thymeleaf、Hutool |
@@ -35,11 +36,13 @@
 
 ## 系统架构
 
-系统采用 **MCP Server + MCP Client** 双端架构：
+系统采用 **MCP Server + MCP Client** 双端架构，MySQL 通过 **ProxySQL** 实现读写分离：
 
 - **McpServer（端口 8014）**：核心业务服务，包含 27+ 个 MCP Tool、定时任务、三级阈值、Redis 缓存
 - **UserChatClient（端口 8080）**：管理员端，AI 对话 + MCP Client + Caffeine 本地缓存
 - **webapp（端口 9092）**：客户端，能耗看板 + AI 对话 + 工单管理
+- **MySQL 主从**：Master（3306）处理写操作，Slave（3307）处理读操作，主从复制实时同步
+- **ProxySQL**：应用统一连接 ProxySQL 端口，根据 SQL 类型自动路由读写
 
 ---
 
@@ -173,6 +176,21 @@
 | 工单并发处理 | MyBatis-Plus 乐观锁 | version 字段防冲突 |
 | 数据导入去重 | Redisson 布隆过滤器 | 快速判断是否重复 |
 
+### MySQL 主从复制与 ProxySQL 读写分离
+
+```
+应用 → ProxySQL(6033) → Master(:3306, 写) + Slave(:3307, 读)
+                          └────── 主从复制 ──────┘
+```
+
+| 角色 | 端口 | 职责 |
+|------|------|------|
+| MySQL Master | 3306 | 接受写操作（INSERT/UPDATE/DELETE），生成 binlog |
+| MySQL Slave | 3307 | 通过 IO 线程拉取 binlog，SQL 线程回放，处理读操作 |
+| ProxySQL | 6033 | 中间代理，自动将 SELECT 路由到从库，写操作路由到主库 |
+
+应用代码无需感知读写分离，统一连接 ProxySQL 端口即可，由 ProxySQL 根据 SQL 语句自动路由。
+
 ### 性能
 
 | 优化项 | 优化前 | 优化后 | 提升 |
@@ -181,6 +199,7 @@
 | 告警去重 N+1 查询 | 50 次 DB 查询 | 1 次查询 + Set 过滤 | **50x** |
 | 反射字段访问 | 每次反射 | ConcurrentHashMap 缓存 | **10x** |
 | 告警批量插入 | 逐条 insert | saveBatch | **50x** |
+| 读写分离 | 所有请求走主库 | ProxySQL 自动路由读到从库 | **~2x** |
 
 ---
 
@@ -218,7 +237,8 @@ building/
 ### 环境要求
 
 - JDK 17+
-- MySQL 8.x
+- MySQL 8.x（主库 3306 + 从库 3307，配置主从复制）
+- ProxySQL 2.x（读写分离代理，默认端口 6033）
 - Redis 6.x+
 - Maven 3.8+
 
