@@ -7,6 +7,18 @@ server:
 
 
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      task:
+        scheduling:
+          pool:
+            size: 4
+    url: jdbc:mysql://localhost:3306/building_energy_standard?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
   ai:
     dashscope:
         api-key: ${OPENAI_API_KEY}
@@ -20,18 +32,7 @@ spring:
           schema: classpath:db/schema-mysql.sql
           platform: mysql
 
-  datasource:
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      task:
-        scheduling:
-          pool:
-            size: 4
-    url: jdbc:mysql://localhost:3306/building_energy_standard?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update          # 第一次运行自动建表，生产环境建议用 validate 或手动管理
