@@ -6,6 +6,12 @@ spring:
     url: jdbc:mysql://localhost:6033/building_energy_standard?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
     username: root
     password: 123456
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 600000
 
   ai:
 #    dashscope:

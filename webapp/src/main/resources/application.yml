@@ -1,23 +1,28 @@
 server:
   tomcat:
     threads:
-      max: 300        # 默认 200，SSE 长连接多需要更多
-    accept-count: 100  # 等待队列
+      max: 500        # SSE 长连接需要更多线程
+      min-spare: 50   # 最小空闲线程
+    accept-count: 200  # 等待队列
+    max-connections: 1000
   port: 9090
 
 
 spring:
   datasource:
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      task:
-        scheduling:
-          pool:
-            size: 4
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 600000
     url: jdbc:mysql://localhost:3306/building_energy_standard?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
     username: root
     password: 123456
+  task:
+    scheduling:
+      pool:
+        size: 4
     driver-class-name: com.mysql.cj.jdbc.Driver
   ai:
     dashscope:
