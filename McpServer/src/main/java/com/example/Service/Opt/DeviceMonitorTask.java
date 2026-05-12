@@ -63,7 +63,7 @@ public class DeviceMonitorTask {
 		// 分布式锁：防止多实例同时执行
 		RLock lock = redissonClient.getLock("lock:device-monitor-task");
 		try {
-			if (!lock.tryLock(10, 60, TimeUnit.MINUTES)) {
+			if (!lock.tryLock(10,TimeUnit.MINUTES)) {
 				log.info("另一个实例正在执行监控任务，本次跳过");
 				return;
 			}
